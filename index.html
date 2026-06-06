@@ -42,6 +42,11 @@
     transition:transform .08s,filter .15s;box-shadow:var(--shadow-sm)}
   .scan-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
   .scan-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .burst-btn{background:var(--orange)}
+
+  .b-real{background:var(--green-soft);color:var(--green);box-shadow:inset 0 0 0 1px rgba(22,131,58,.18)}
+  .b-approx{background:var(--soft);color:var(--muted)}
+  .b-note{font-size:12px;color:var(--muted);margin:2px 0 18px;line-height:1.7}
 
   .meta{font-size:13px;color:var(--muted);margin-bottom:18px;display:flex;gap:18px;flex-wrap:wrap}
   .meta b{color:var(--text);font-weight:650}
@@ -122,6 +127,7 @@
       <input id="top" type="number" value="10" min="1" max="30">
     </div>
     <button class="scan-btn" id="scanBtn" onclick="scan()">⚡ 开始扫描</button>
+    <button class="scan-btn burst-btn" id="burstBtn" onclick="burst()" title="对候选仓库拉取真实 star 时间戳,算当前实时星速(约30秒)">🔥 实时爆发榜</button>
   </div>
 
   <div id="meta" class="meta" style="display:none"></div>
@@ -236,6 +242,59 @@ function render(data){
     }
     html += '</div>';
   });
+  $('results').innerHTML = html;
+}
+
+async function burst(){
+  const btn = $('burstBtn'), sb = $('scanBtn');
+  btn.disabled = true; sb.disabled = true; btn.textContent = '拉取中…';
+  $('results').innerHTML = '<div class="state"><div class="spinner"></div>正在拉取 star 时间戳,计算实时星速…(约 30 秒)</div>';
+  $('risers').innerHTML = ''; $('meta').style.display='none';
+  const params = new URLSearchParams({
+    days: $('days').value, min_stars: $('minstars').value, track: $('track').value, candidates: '12'
+  });
+  try{
+    const r = await fetch('/api/burst?'+params);
+    const data = await r.json();
+    if(data.error){ throw new Error(data.error); }
+    renderBurst(data);
+  }catch(e){
+    $('results').innerHTML = `<div class="state">爆发榜拉取失败:${escapeHtml(e.message)}</div>`;
+  }finally{
+    btn.disabled = false; sb.disabled = false; btn.textContent = '🔥 实时爆发榜';
+  }
+}
+
+function renderBurst(data){
+  const p = data.params;
+  $('meta').style.display='flex';
+  $('meta').innerHTML = `扫描时间 <b>${data.scanned_at}</b>`+
+    `<span>近 <b>${p.days}</b> 天 · ≥<b>${p.min_stars}</b> 星 · 赛道 <b>${p.track}</b></span>`+
+    `<span>取候选 <b>${p.candidates}</b> 个算实时星速</span>`;
+  let html = `<div class="track"><div class="track-head"><h2>🔥 实时爆发榜</h2>
+    <span class="cnt">按「当前星速」排序</span></div>`;
+  html += `<div class="b-note">🟢 <b style="color:var(--green)">实时</b>=用最新 ~100 颗 star 的真实时间算的当前速率(最可信) ·
+    ⚪ <b>近似</b>=该仓库已超 4 万星,GitHub 翻不到最新 star,取"自第 4 万颗以来的平均"</div>`;
+  if(!data.board.length){
+    html += '<div class="state" style="padding:24px">无数据,试试调低最低星数或换赛道</div>';
+  } else {
+    data.board.forEach((r,i)=>{
+      const b = r.burst;
+      const tag = b.basis==='realtime'
+        ? `<span class="pill b-real">🟢 实时 ${b.per_day}/天</span>`
+        : `<span class="pill b-approx">⚪ 近似 ${b.per_day}/天</span>`;
+      const desc = r.description ? `<div class="desc">${escapeHtml(r.description)}</div>` : '';
+      html += `<div class="card"><div class="card-top">
+        <span class="rank">${i+1}.</span>
+        <span class="repo-name"><a href="${r.url}" target="_blank">${escapeHtml(r.full_name)}</a></span>
+        ${tag}
+        ${pill('p-star','⭐'+r.stars.toLocaleString())}
+        ${pill('p-age','末star '+b.last_star_ago)}
+        ${pill('p-lang',r.language)}
+      </div>${desc}</div>`;
+    });
+  }
+  html += '</div>';
   $('results').innerHTML = html;
 }
 

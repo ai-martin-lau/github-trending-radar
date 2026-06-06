@@ -70,7 +70,7 @@ function humanAge(ms) {
   return `${Math.round(h / 24)} 天前`;
 }
 
-async function scan({ days = 90, minStars = 50, top = 10, track = null }) {
+async function scan({ days = 90, minStars = 50, top = 10, track = null, noSave = false }) {
   const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
   const qualifier = `created:>${since} stars:>=${minStars}`;
   const prev = await loadSnapshot();
@@ -118,7 +118,7 @@ async function scan({ days = 90, minStars = 50, top = 10, track = null }) {
     risers.sort((a, b) => b.delta - a.delta);
   }
 
-  if (shouldRefresh) await saveSnapshot(Object.values(allSeen));
+  if (shouldRefresh && !noSave) await saveSnapshot(Object.values(allSeen));
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
   return {
@@ -131,6 +131,75 @@ async function scan({ days = 90, minStars = 50, top = 10, track = null }) {
     baseline_age: humanAge(baseAgeMs),     // 当前对比的基线是多久前的
     baseline_refreshed: shouldRefresh,      // 本次是否更新了基线
     baseline_min_hours: BASELINE_MIN_HOURS,
+  };
+}
+
+// ── v2 实时爆发榜:用 stargazers 时间戳算「当前星速」 ──
+const STAR_HEADER = 'Accept: application/vnd.github.star+json';
+
+async function ghStargazersPage(fullName, page) {
+  const { stdout } = await execFileP(GH,
+    ['api', `repos/${fullName}/stargazers?per_page=100&page=${page}`, '-H', STAR_HEADER, '--include'],
+    { timeout: 30000, maxBuffer: 1024 * 1024 * 10 });
+  const sep = stdout.search(/\r?\n\r?\n/);
+  const head = sep >= 0 ? stdout.slice(0, sep) : '';
+  const body = sep >= 0 ? stdout.slice(sep).trim() : stdout;
+  let items = [];
+  try { items = JSON.parse(body); } catch {}
+  return { head, items };
+}
+
+function lastPageOf(head) {
+  const m = head.match(/[?&]page=(\d+)[^>]*>;\s*rel="last"/);
+  return m ? parseInt(m[1], 10) : 1;
+}
+
+// 算单个仓库的「当前星速」(stars/天)
+async function burstRate(fullName, totalStars) {
+  try {
+    const first = await ghStargazersPage(fullName, 1);
+    const lastPage = lastPageOf(first.head);
+    const capped = lastPage >= 400;                 // 翻页封顶=看不到最新star
+    const last = lastPage === 1 ? first : await ghStargazersPage(fullName, lastPage);
+    const times = last.items.map(x => new Date(x.starred_at).getTime())
+      .filter(Boolean).sort((a, b) => a - b);
+    if (times.length < 2) return null;
+    const t0 = times[0], t1 = times[times.length - 1], n = times.length, now = Date.now();
+    let perDay, basis;
+    if (!capped) {
+      // 末页=最新star,直接算这~100颗的真实速率 = 当前实时星速
+      const spanDays = (t1 - t0) / 86400000;
+      perDay = spanDays > 0 ? (n - 1) / spanDays : null;
+      basis = 'realtime';
+    } else {
+      // 超4万封顶:看不到最新,用「自第~4万颗以来的平均」近似
+      const reachable = lastPage * 100;
+      const daysSince = (now - t1) / 86400000;
+      perDay = daysSince > 0 ? Math.max(totalStars - reachable, 0) / daysSince : null;
+      basis = 'approx';
+    }
+    if (perDay == null) return null;
+    return { per_day: Math.round(perDay), capped, basis, last_star_ago: humanAge(now - t1) };
+  } catch { return null; }
+}
+
+async function burstBoard({ days = 90, minStars = 50, track = null, candidates = 12 }) {
+  // 先普通扫一遍拿候选池(不动基线)
+  const base = await scan({ days, minStars, top: 30, track, noSave: true });
+  const pool = {};
+  for (const t of base.tracks) for (const r of t.repos) pool[r.full_name] = r;
+  const cands = Object.values(pool).sort((a, b) => b.velocity - a.velocity).slice(0, candidates);
+  const out = [];
+  for (let i = 0; i < cands.length; i += 4) {          // 限流:每批4个
+    const batch = cands.slice(i, i + 4);
+    const rates = await Promise.all(batch.map(c => burstRate(c.full_name, c.stars)));
+    batch.forEach((c, j) => { if (rates[j]) out.push({ ...c, burst: rates[j] }); });
+  }
+  out.sort((a, b) => b.burst.per_day - a.burst.per_day);
+  return {
+    scanned_at: base.scanned_at,
+    params: { days, min_stars: minStars, track: track || '全部', candidates: cands.length },
+    board: out,
   };
 }
 
@@ -151,6 +220,18 @@ const server = createServer(async (req, res) => {
     return;
   }
   if (url.pathname === '/api/tracks') return json(res, 200, Object.keys(TRACKS));
+  if (url.pathname === '/api/burst') {
+    const q = url.searchParams;
+    try {
+      const data = await burstBoard({
+        days: parseInt(q.get('days') || '90', 10),
+        minStars: parseInt(q.get('min_stars') || '50', 10),
+        track: q.get('track') || null,
+        candidates: parseInt(q.get('candidates') || '12', 10),
+      });
+      return json(res, 200, data);
+    } catch (e) { return json(res, 500, { error: String(e.message) }); }
+  }
   if (url.pathname === '/api/scan') {
     const q = url.searchParams;
     try {
