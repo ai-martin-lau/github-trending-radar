@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛰 GitHub 爆款雷达</title>
+<style>
+  :root{
+    color-scheme:light;
+    --bg:#f5f5f7; --panel:rgba(255,255,255,.86); --panel-strong:#ffffff;
+    --text:#1d1d1f; --muted:#6e6e73; --soft:#f2f2f5; --line:rgba(0,0,0,.09);
+    --blue:#0071e3; --blue-soft:rgba(0,113,227,.1);
+    --green:#16833a; --green-soft:rgba(22,131,58,.1);
+    --orange:#bf5a00; --orange-soft:rgba(191,90,0,.1);
+    --shadow:0 14px 34px rgba(0,0,0,.07);
+    --shadow-sm:0 4px 14px rgba(0,0,0,.05);
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;
+    font-size:15px;min-height:100vh;padding:34px 22px 70px;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  h1{font-size:32px;font-weight:780;letter-spacing:-.8px}
+  .sub{color:var(--muted);font-size:14px;margin:10px 0 24px;line-height:1.75;max-width:760px}
+  .sub b{font-weight:650}
+
+  .controls{background:var(--panel);backdrop-filter:saturate(180%) blur(20px);
+    border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:18px 20px;display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end;margin-bottom:22px}
+  .ctrl{display:flex;flex-direction:column;gap:7px}
+  .ctrl label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:650}
+  .ctrl select,.ctrl input{background:#fff;border:1px solid var(--line);color:var(--text);
+    padding:10px 12px;border-radius:10px;font-size:14px;min-width:124px;outline:none;
+    transition:border-color .15s,box-shadow .15s}
+  .ctrl select:focus,.ctrl input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .scan-btn{background:var(--blue);color:#fff;font-weight:650;border:none;
+    padding:12px 28px;border-radius:11px;font-size:15px;cursor:pointer;
+    transition:transform .08s,filter .15s;box-shadow:var(--shadow-sm)}
+  .scan-btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+  .scan-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  .meta{font-size:13px;color:var(--muted);margin-bottom:18px;display:flex;gap:18px;flex-wrap:wrap}
+  .meta b{color:var(--text);font-weight:650}
+
+  .risers{background:var(--orange-soft);border:1px solid rgba(191,90,0,.18);
+    border-radius:var(--radius);padding:16px 20px;margin-bottom:26px}
+  .risers h3{font-size:14px;color:var(--orange);margin-bottom:12px;font-weight:700}
+  .riser-row{display:flex;align-items:center;gap:12px;padding:8px 0;
+    border-top:1px solid rgba(191,90,0,.14);font-size:13px}
+  .riser-row:first-of-type{border-top:none}
+  .riser-delta{color:var(--orange);font-weight:700;min-width:64px}
+  .riser-row a{color:var(--text);text-decoration:none;font-weight:600}
+  .riser-row a:hover{color:var(--blue)}
+
+  .track{margin-bottom:32px}
+  .track-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;
+    padding-bottom:10px;border-bottom:1px solid var(--line)}
+  .track-head h2{font-size:19px;font-weight:700}
+  .track-head .cnt{font-size:12px;color:var(--muted)}
+
+  .card{background:var(--panel-strong);border:1px solid var(--line);border-radius:13px;
+    box-shadow:var(--shadow-sm);padding:15px 17px;margin-bottom:11px;
+    transition:box-shadow .15s,transform .08s}
+  .card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+  .card-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .rank{font-size:13px;color:var(--muted);min-width:24px;font-variant-numeric:tabular-nums}
+  .repo-name{font-size:15px;font-weight:650}
+  .repo-name a{color:var(--text);text-decoration:none}
+  .repo-name a:hover{color:var(--blue)}
+  .pill{font-size:11px;padding:3px 9px;border-radius:7px;font-weight:600;font-variant-numeric:tabular-nums}
+  .p-star{background:var(--soft);color:#3a3a3c}
+  .p-vel{background:var(--green-soft);color:var(--green);box-shadow:inset 0 0 0 1px rgba(22,131,58,.18)}
+  .p-age{background:var(--soft);color:var(--muted)}
+  .p-lang{background:var(--blue-soft);color:var(--blue)}
+  .p-hot{background:var(--orange-soft);color:var(--orange);font-weight:700}
+  .desc{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.55}
+
+  .state{text-align:center;padding:60px 20px;color:var(--muted);
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+  .spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--blue);
+    border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .legend{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8}
+  .legend b{color:var(--green);font-weight:650}
+  footer{margin-top:44px;text-align:center;color:#a1a1a6;font-size:11px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🛰 GitHub 爆款雷达</h1>
+  </header>
+  <p class="sub">
+    抓「最近创建 + 已经开始涨星」的潜力仓库。核心看 <b style="color:var(--green)">星速(⭐/天)</b> 不是总星 —— 天龄小 + 星速高 = 正在起飞。<br>
+    第二次扫描起会显示 <b style="color:var(--orange)">🔥 自上次新增</b>,这是真正的上升信号。
+  </p>
+
+  <div class="controls">
+    <div class="ctrl">
+      <label>赛道</label>
+      <select id="track"><option value="">全部赛道</option></select>
+    </div>
+    <div class="ctrl">
+      <label>近 N 天创建</label>
+      <select id="days">
+        <option value="30">30 天(最早期)</option>
+        <option value="60">60 天</option>
+        <option value="90" selected>90 天</option>
+        <option value="180">180 天</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <label>最低星数</label>
+      <input id="minstars" type="number" value="50" min="0" step="10">
+    </div>
+    <div class="ctrl">
+      <label>每赛道显示</label>
+      <input id="top" type="number" value="10" min="1" max="30">
+    </div>
+    <button class="scan-btn" id="scanBtn" onclick="scan()">⚡ 开始扫描</button>
+  </div>
+
+  <div id="meta" class="meta" style="display:none"></div>
+  <div id="risers"></div>
+  <div id="results">
+    <div class="state">
+      <p>点上面的「⚡ 开始扫描」拉取一次实时数据</p>
+      <p class="legend">
+        🚀 <b>星速</b>=总星÷天龄,越高越猛 &nbsp;·&nbsp; 📅 <b>天龄</b>=创建多少天 &nbsp;·&nbsp; 🔥 <b>新增</b>=自上次扫描涨了多少星
+      </p>
+    </div>
+  </div>
+
+  <footer>GitHub 爆款雷达 · 数据来自 GitHub Search API · 仅做发现,不替你做决定</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+async function loadTracks(){
+  try{
+    const r = await fetch('/api/tracks');
+    const tracks = await r.json();
+    const sel = $('track');
+    tracks.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t; o.textContent = t; sel.appendChild(o);
+    });
+  }catch(e){}
+}
+
+function pill(cls, txt){ return `<span class="pill ${cls}">${txt}</span>`; }
+
+function repoCard(r, i){
+  const hot = r.delta ? pill('p-hot', `🔥+${r.delta}`) : '';
+  const desc = r.description ? `<div class="desc">${escapeHtml(r.description)}</div>` : '';
+  return `<div class="card">
+    <div class="card-top">
+      <span class="rank">${i}.</span>
+      <span class="repo-name"><a href="${r.url}" target="_blank">${escapeHtml(r.full_name)}</a></span>
+      ${pill('p-star','⭐'+r.stars.toLocaleString())}
+      ${pill('p-vel','🚀'+Math.round(r.velocity)+'/天')}
+      ${pill('p-age','📅'+Math.round(r.age_days)+'天')}
+      ${pill('p-lang',r.language)}
+      ${hot}
+    </div>${desc}
+  </div>`;
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+async function scan(){
+  const btn = $('scanBtn');
+  btn.disabled = true; btn.textContent = '扫描中…';
+  $('results').innerHTML = '<div class="state"><div class="spinner"></div>正在扫描 GitHub…(约 10–25 秒)</div>';
+  $('risers').innerHTML = ''; $('meta').style.display='none';
+
+  const params = new URLSearchParams({
+    days: $('days').value, min_stars: $('minstars').value,
+    top: $('top').value, track: $('track').value
+  });
+  try{
+    const r = await fetch('/api/scan?'+params);
+    const data = await r.json();
+    if(data.error){ throw new Error(data.error); }
+    render(data);
+  }catch(e){
+    $('results').innerHTML = `<div class="state">扫描失败:${escapeHtml(e.message)}<br><br>
+      请确认终端里 <b>gh auth status</b> 已登录。</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = '⚡ 开始扫描';
+  }
+}
+
+function render(data){
+  const p = data.params;
+  $('meta').style.display='flex';
+  let baseInfo = '';
+  if(data.baseline_age){
+    baseInfo = `<span>对比基线 <b>${data.baseline_age}</b>` +
+      (data.baseline_refreshed ? '(本次已刷新基线)' : `(未到 ${data.baseline_min_hours}h,基线不变)`) + `</span>`;
+  }
+  $('meta').innerHTML =
+    `扫描时间 <b>${data.scanned_at}</b>` +
+    `<span>近 <b>${p.days}</b> 天 · ≥<b>${p.min_stars}</b> 星 · 赛道 <b>${p.track}</b></span>` +
+    `<span>本次收录 <b>${data.total_seen}</b> 个仓库</span>` + baseInfo;
+
+  if(data.risers && data.risers.length){
+    let h = `<div class="risers"><h3>🔥 新增星最多 · 对比 ${data.baseline_age||'上次'} 的基线(真·上升信号)</h3>`;
+    data.risers.forEach(r=>{
+      h += `<div class="riser-row"><span class="riser-delta">+${r.delta}</span>
+        <span style="color:var(--muted)">⭐${r.stars.toLocaleString()}</span>
+        <a href="${r.url}" target="_blank">${escapeHtml(r.full_name)}</a></div>`;
+    });
+    h += '</div>';
+    $('risers').innerHTML = h;
+  } else if(!data.had_snapshot){
+    $('risers').innerHTML = `<div class="risers" style="background:var(--soft);border-color:var(--line)">
+      <span style="color:var(--muted);font-size:13px">ℹ️ 这是首次扫描,已存快照。下次扫描就会在这里显示「自上次新增最多」。</span></div>`;
+  }
+
+  let html = '';
+  data.tracks.forEach(t=>{
+    html += `<div class="track"><div class="track-head"><h2>${escapeHtml(t.name)}</h2>
+      <span class="cnt">命中 ${t.hits} 个</span></div>`;
+    if(!t.repos.length){
+      html += '<div class="state" style="padding:24px">本轮无命中,试试调低最低星数或调大天数</div>';
+    } else {
+      t.repos.forEach((r,i)=> html += repoCard(r, i+1));
+    }
+    html += '</div>';
+  });
+  $('results').innerHTML = html;
+}
+
+loadTracks();
+</script>
+</body>
+</html>

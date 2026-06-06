@@ -1,0 +1,7 @@
+# 运行时自动生成的快照(本地数据,不入库)
+snapshot.json
+# 服务日志
+service.log
+*.log
+# macOS
+.DS_Store
