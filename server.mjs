@@ -219,6 +219,12 @@ const server = createServer(async (req, res) => {
     } catch { res.writeHead(404).end('index.html not found'); }
     return;
   }
+  if (url.pathname === '/favicon.svg') {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🛰</text></svg>`;
+    const body = Buffer.from(svg, 'utf-8');
+    res.writeHead(200, { 'Content-Type': 'image/svg+xml; charset=utf-8', 'Cache-Control': 'no-cache', 'Content-Length': body.length });
+    return res.end(body);
+  }
   if (url.pathname === '/api/tracks') return json(res, 200, Object.keys(TRACKS));
   if (url.pathname === '/api/burst') {
     const q = url.searchParams;
