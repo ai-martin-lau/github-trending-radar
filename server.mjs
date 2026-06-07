@@ -214,7 +214,7 @@ const server = createServer(async (req, res) => {
   if (url.pathname === '/' || url.pathname === '/index.html') {
     try {
       const html = await readFile(join(HERE, 'index.html'));
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': html.length });
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Content-Length': html.length });
       res.end(html);
     } catch { res.writeHead(404).end('index.html not found'); }
     return;
