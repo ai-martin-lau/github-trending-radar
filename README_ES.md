@@ -2,17 +2,6 @@
   <a href="README.md">简体中文</a> · <a href="README_EN.md">English</a> · <a href="README_JA.md">日本語</a> · <a href="README_KO.md">한국어</a> · <a href="README_ES.md">Español</a>
 </p>
 
-<p align="center">
-  <img src="assets/cover.png" alt="Radar de tendencias de GitHub" width="100%">
-</p>
-
-## 📊 Vista previa del panel
-
-<p align="center">
-  <img src="assets/screenshot.png" alt="Vista previa del panel" width="100%">
-</p>
-
-
 # 🛰 Radar de tendencias de GitHub
 
 Un radar de ejecución local para repositorios de GitHub con potencial, la imagen simétrica del «Radar de tendencias de X» —— solo que vigila GitHub.
