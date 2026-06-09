@@ -74,3 +74,7 @@ python3 radar_core.py --min-stars 200 --top 15
 - 로그인된 GitHub CLI(`gh auth status` 에서 로그인 상태가 보임)
 - Homebrew node(`/opt/homebrew/bin/node`)— 자동 실행 서비스에서 사용
 - Python 3(명령줄용, macOS 기본 포함)
+
+## 스타 히스토리
+
+[![스타 히스토리 차트](https://api.star-history.com/svg?repos=ai-martin-lau/github-trending-radar&type=Date)](https://star-history.com/#ai-martin-lau/github-trending-radar&Date)
