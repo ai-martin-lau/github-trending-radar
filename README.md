@@ -85,3 +85,7 @@ python3 radar_core.py --min-stars 200 --top 15
 - 已登录的 GitHub CLI(`gh auth status` 能看到已登录)
 - Homebrew node(`/opt/homebrew/bin/node`)— 用于自启服务
 - Python 3(命令行用,macOS 自带)
+
+## Star 趋势
+
+[![Star 趋势图](https://api.star-history.com/svg?repos=ai-martin-lau/github-trending-radar&type=Date)](https://star-history.com/#ai-martin-lau/github-trending-radar&Date)
