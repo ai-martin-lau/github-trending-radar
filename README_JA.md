@@ -2,17 +2,6 @@
   <a href="README.md">简体中文</a> · <a href="README_EN.md">English</a> · <a href="README_JA.md">日本語</a> · <a href="README_KO.md">한국어</a> · <a href="README_ES.md">Español</a>
 </p>
 
-<p align="center">
-  <img src="assets/cover.png" alt="GitHub バズレーダー" width="100%">
-</p>
-
-## 📊 ダッシュボードプレビュー
-
-<p align="center">
-  <img src="assets/screenshot.png" alt="ダッシュボードプレビュー" width="100%">
-</p>
-
-
 # 🛰 GitHub バズレーダー
 
 ローカルで動く、有望な GitHub リポジトリ向けのレーダー。「X ホットスポットレーダー」と対をなすもので、見張る対象が GitHub というだけです。
