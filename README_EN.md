@@ -74,3 +74,7 @@ The track keywords live in two places (changing one is enough — depends on whi
 - A logged-in GitHub CLI (`gh auth status` shows you're logged in)
 - Homebrew node (`/opt/homebrew/bin/node`) — used by the auto-start service
 - Python 3 (for command-line use; bundled with macOS)
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=ai-martin-lau/github-trending-radar&type=Date)](https://star-history.com/#ai-martin-lau/github-trending-radar&Date)
