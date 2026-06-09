@@ -2,17 +2,6 @@
   <a href="README.md">简体中文</a> · <a href="README_EN.md">English</a> · <a href="README_JA.md">日本語</a> · <a href="README_KO.md">한국어</a> · <a href="README_ES.md">Español</a>
 </p>
 
-<p align="center">
-  <img src="assets/cover.png" alt="GitHub 인기 레이더" width="100%">
-</p>
-
-## 📊 대시보드 미리보기
-
-<p align="center">
-  <img src="assets/screenshot.png" alt="대시보드 미리보기" width="100%">
-</p>
-
-
 # 🛰 GitHub 인기 레이더
 
 로컬에서 실행되는 잠재력 있는 GitHub 저장소 레이더로, 「X 핫스팟 레이더」와 대칭을 이룹니다 —— 다만 주시 대상이 GitHub일 뿐입니다.
