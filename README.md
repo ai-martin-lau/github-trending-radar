@@ -2,6 +2,13 @@
   <img src="assets/cover.png" alt="GitHub 爆款雷达" width="100%">
 </p>
 
+## 📊 面板预览
+
+<p align="center">
+  <img src="assets/screenshot.png" alt="面板预览" width="100%">
+</p>
+
+
 # 🛰 GitHub 爆款雷达
 
 一个本地运行的 GitHub 潜力仓库雷达,和「X 热点雷达」对称——只不过盯的是 GitHub。
