@@ -74,3 +74,7 @@ Las palabras clave de los segmentos están en dos lugares (basta con cambiar uno
 - Una CLI de GitHub con sesión iniciada (`gh auth status` muestra que has iniciado sesión)
 - node de Homebrew (`/opt/homebrew/bin/node`) — usado por el servicio de inicio automático
 - Python 3 (para uso por línea de comandos; incluido con macOS)
+
+## Historial de estrellas
+
+[![Gráfico de historial de estrellas](https://api.star-history.com/svg?repos=ai-martin-lau/github-trending-radar&type=Date)](https://star-history.com/#ai-martin-lau/github-trending-radar&Date)
