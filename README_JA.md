@@ -74,3 +74,7 @@ python3 radar_core.py --min-stars 200 --top 15
 - ログイン済みの GitHub CLI(`gh auth status` でログイン済みが確認できる)
 - Homebrew node(`/opt/homebrew/bin/node`)— 自動実行サービスで使用
 - Python 3(コマンドライン用。macOS に標準搭載)
+
+## スター推移
+
+[![スター推移グラフ](https://api.star-history.com/svg?repos=ai-martin-lau/github-trending-radar&type=Date)](https://star-history.com/#ai-martin-lau/github-trending-radar&Date)
