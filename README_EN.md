@@ -2,17 +2,6 @@
   <a href="README.md">简体中文</a> · <a href="README_EN.md">English</a> · <a href="README_JA.md">日本語</a> · <a href="README_KO.md">한국어</a> · <a href="README_ES.md">Español</a>
 </p>
 
-<p align="center">
-  <img src="assets/cover.png" alt="GitHub Trending Radar" width="100%">
-</p>
-
-## 📊 Dashboard Preview
-
-<p align="center">
-  <img src="assets/screenshot.png" alt="Dashboard preview" width="100%">
-</p>
-
-
 # 🛰 GitHub Trending Radar
 
 A locally running radar for high-potential GitHub repos, the mirror image of the "X Hotspot Radar" — except it watches GitHub instead.
