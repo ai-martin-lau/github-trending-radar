@@ -58,6 +58,17 @@ async function saveSnapshot(repos) {
 // 基线最短刷新间隔:连续点扫描时,不会反复覆盖快照,始终拿这个时长之前的基线来比
 const BASELINE_MIN_HOURS = 6;
 
+// 最近一次扫描的候选池缓存:爆发榜直接复用,不用再搜一遍 GitHub
+const SCAN_CACHE_MAX_MIN = 10;
+let scanCache = null; // { key, ts, pool }
+const cacheKeyOf = (days, minStars, track) => `${days}|${minStars}|${(track || '').toLowerCase()}`;
+
+function nowStr() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+
 function baselineTsOf(snap) {
   for (const v of Object.values(snap)) if (v && v.ts) return v.ts;
   return null;
@@ -83,6 +94,7 @@ async function scan({ days = 90, minStars = 50, top = 10, track = null, noSave =
 
   const resultTracks = [];
   const allSeen = {};
+  const poolMap = {};
   for (const [tname, terms] of tracks) {
     const merged = {};
     for (const term of terms) {
@@ -105,8 +117,10 @@ async function scan({ days = 90, minStars = 50, top = 10, track = null, noSave =
       };
     });
     rows.sort((a, b) => b.velocity - a.velocity);
+    for (const row of rows) poolMap[row.full_name] = row;
     resultTracks.push({ name: tname, hits: rows.length, repos: rows.slice(0, top) });
   }
+  scanCache = { key: cacheKeyOf(days, minStars, track), ts: Date.now(), pool: Object.values(poolMap) };
 
   let risers = [];
   if (Object.keys(prev).length) {
@@ -119,10 +133,8 @@ async function scan({ days = 90, minStars = 50, top = 10, track = null, noSave =
   }
 
   if (shouldRefresh && !noSave) await saveSnapshot(Object.values(allSeen));
-  const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
   return {
-    scanned_at: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
+    scanned_at: nowStr(),
     params: { days, min_stars: minStars, top, track: track || '全部' },
     tracks: resultTracks,
     risers: risers.slice(0, 10),
@@ -184,11 +196,13 @@ async function burstRate(fullName, totalStars) {
 }
 
 async function burstBoard({ days = 90, minStars = 50, track = null, candidates = 12 }) {
-  // 先普通扫一遍拿候选池(不动基线)
-  const base = await scan({ days, minStars, top: 30, track, noSave: true });
-  const pool = {};
-  for (const t of base.tracks) for (const r of t.repos) pool[r.full_name] = r;
-  const cands = Object.values(pool).sort((a, b) => b.velocity - a.velocity).slice(0, candidates);
+  // 优先复用刚扫描完的候选池;缓存没了或参数变了才重新扫一遍(不动基线)
+  const key = cacheKeyOf(days, minStars, track);
+  if (!scanCache || scanCache.key !== key || Date.now() - scanCache.ts > SCAN_CACHE_MAX_MIN * 60000) {
+    await scan({ days, minStars, top: 30, track, noSave: true });   // 顺带填充 scanCache
+  }
+  const pool = scanCache && scanCache.key === key ? scanCache.pool : [];
+  const cands = [...pool].sort((a, b) => b.velocity - a.velocity).slice(0, candidates);
   const out = [];
   for (let i = 0; i < cands.length; i += 4) {          // 限流:每批4个
     const batch = cands.slice(i, i + 4);
@@ -197,7 +211,7 @@ async function burstBoard({ days = 90, minStars = 50, track = null, candidates =
   }
   out.sort((a, b) => b.burst.per_day - a.burst.per_day);
   return {
-    scanned_at: base.scanned_at,
+    scanned_at: nowStr(),
     params: { days, min_stars: minStars, track: track || '全部', candidates: cands.length },
     board: out,
   };
