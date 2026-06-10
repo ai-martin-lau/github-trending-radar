@@ -12,7 +12,7 @@ Capta repositorios «creados recientemente + que ya empiezan a ganar estrellas»
 - Escanea 4 segmentos: **IA / LLM**, **Agent / MCP**, **Creadores/Herramientas de contenido**, **Expansión global/Desarrollo indie**
 - La métrica clave es la **velocidad de estrellas (⭐/día) = estrellas totales ÷ días de antigüedad**, y no el total de estrellas —— pocos días de antigüedad + alta velocidad = despegando
 - Registra instantáneas y, a partir del segundo escaneo, muestra **🔥 nuevas desde la última vez** (una verdadera señal de ascenso)
-- **Ranking de explosiones en tiempo real v2**: para los repositorios candidatos obtiene las marcas de tiempo reales de cada star y calcula la **velocidad de estrellas en tiempo real actual** (la velocidad real de las ~100 stars más recientes), lo que permite distinguir «explotando ahora mismo» de «ya enfriado» —— algo que la velocidad promedio no revela. Nota: para repositorios con más de 40 000 estrellas, GitHub limita la paginación, por lo que solo se puede obtener un valor aproximado (la interfaz lo marca como 🟢tiempo real / ⚪aproximado)
+- **Ranking de explosiones en tiempo real (añadido automáticamente tras cada escaneo)**: al terminar el escaneo, los 12 candidatos con mayor velocidad obtienen automáticamente sus marcas de tiempo reales de star para calcular la **velocidad de estrellas en tiempo real actual** (la velocidad real de las ~100 stars más recientes), lo que permite distinguir «explotando ahora mismo» de «ya enfriado» —— algo que la velocidad promedio no revela. El ranking se muestra como sección independiente y la etiqueta 🟢tiempo real también se añade a las tarjetas correspondientes de las listas por segmento. Nota: para repositorios con más de 40 000 estrellas, GitHub limita la paginación, por lo que solo se puede obtener un valor aproximado (la interfaz lo marca como 🟢tiempo real / ⚪aproximado)
 - Usa la autenticación de la CLI `gh` con la que ya has iniciado sesión localmente: límites de tasa altos y cero configuración
 - Interfaz clara al estilo de Apple, coherente con el Radar de tendencias de X
 
@@ -48,6 +48,7 @@ python3 radar_core.py --min-stars 200 --top 15
 - **🚀 estrellas/día**: velocidad de estrellas; cuanto más alta, más fuerte sube —— **esto es lo que más debes mirar**
 - **📅 días de antigüedad**: cuántos días lleva creado el repositorio; cuanto menor, más «en etapa temprana»
 - **🔥 +N**: estrellas añadidas desde el último escaneo (aparece a partir del segundo escaneo)
+- **🟢 tiempo real N/día**: velocidad de estrellas en tiempo real añadida automáticamente tras el escaneo (calculada con las ~100 stars más recientes) —— mira esto para saber cuánto crece *ahora mismo*
 - En la parte superior, «Más estrellas nuevas desde el último escaneo» = el Top 10 de los que más suben en todos los segmentos
 
 ## Si quieres cambiar los segmentos

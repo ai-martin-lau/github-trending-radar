@@ -12,7 +12,7 @@ It picks up repos that were "recently created + already gaining stars," helping 
 - Scans 4 tracks: **AI / LLM**, **Agent / MCP**, **Creator / Content Tools**, **Going Global / Indie Dev**
 - The core metric is **star velocity (⭐/day) = total stars ÷ age in days**, not total star count — low age + high velocity = taking off
 - Records snapshots, and from the second scan on it shows **🔥 new since last time** (a true rising signal)
-- **v2 Real-time Breakout Board**: for candidate repos it pulls real star timestamps and computes the **current real-time star velocity** (the actual rate of the latest ~100 stars), letting you tell "blowing up right now" from "already cooled off" — something the average velocity can't reveal. Note: GitHub caps pagination for repos over 40k stars, so only an approximate value can be taken (the UI marks it 🟢 real-time / ⚪ approximate)
+- **Real-time Breakout Board (auto-appended after each scan)**: once a scan finishes, the 12 candidates with the highest velocity automatically get their real star timestamps pulled to compute the **current real-time star velocity** (the actual rate of the latest ~100 stars), letting you tell "blowing up right now" from "already cooled off" — something the average velocity can't reveal. The board renders as its own section, and the 🟢 real-time tag is also stamped back onto the matching cards in the track lists. Note: GitHub caps pagination for repos over 40k stars, so only an approximate value can be taken (the UI marks it 🟢 real-time / ⚪ approximate)
 - Uses your locally logged-in `gh` CLI auth — high rate limits, zero config
 - Light Apple-style UI, consistent with the X Hotspot Radar
 
@@ -48,6 +48,7 @@ python3 radar_core.py --min-stars 200 --top 15
 - **🚀 stars/day**: star velocity, the higher the faster it's climbing — **this is the one to watch**
 - **📅 age in days**: how many days since the repo was created; smaller means more "early stage"
 - **🔥 +N**: stars added since the last scan (appears from the second scan on)
+- **🟢 real-time N/day**: the current real-time star velocity auto-appended after the scan (computed from the latest ~100 stars) — check this for how fast it's growing *right now*
 - The top "Most new stars since last scan" = the Top 10 fastest climbers across all tracks
 
 ## Want to change the tracks
